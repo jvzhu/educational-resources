@@ -1,0 +1,23 @@
+{
+  "default": true,
+  "line-length": {
+    "line_length": 120,
+    "heading_line_length": 120,
+    "headers": true,
+    "code_blocks": false,
+    "code_lines": false,
+    "stern": false,
+    "level": "warning"
+  },
+  "no-hard-tabs": true,
+  "blanks-around-headings": true,
+  "blanks-around-lists": true,
+  "no-duplicate-headings": true,
+  "list-marker-space": true,
+  "ul-indent": {
+    "indent": 2
+  },
+  "fenced-code-language": false,
+  "first-line-h1": false,
+  "no-inline-html": false
+}
