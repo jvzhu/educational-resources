@@ -1,0 +1,52 @@
+name: Contributor Recognition
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  issues:
+    types: [opened]
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    name: Welcome contributors
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '👋 Thank you for your contribution to the Educational Narratives Resource Collection!\n\n🎓 Your contribution helps educators and learners worldwide discover valuable resources.\n\nPlease make sure your contribution follows our [CONTRIBUTION_GUIDE.md](./CONTRIBUTION_GUIDE.md). A maintainer will review this shortly.'
+            })
+
+      - name: Comment on Issue
+        if: github.event_name == 'issues'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '👋 Thank you for opening an issue!\n\n📝 We appreciate your feedback and suggestions for improving this educational resource collection. A maintainer will respond soon.\n\nIn the meantime, check out our [COLLABORATORS.md](./COLLABORATORS.md) to see ways you can get more involved!'
+            })
+
+      - name: Add labels to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['contribution', 'pending-review']
+            })
