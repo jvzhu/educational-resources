@@ -1,0 +1,41 @@
+name: Link Validation
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 9 AM UTC
+  workflow_dispatch:  # Allow manual trigger
+  push:
+    paths:
+      - '**.md'
+      - '.github/workflows/link-validation.yml'
+
+jobs:
+  validate-links:
+    runs-on: ubuntu-latest
+    name: Check for broken links
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install link checker
+        run: npm install -g markdown-link-check
+
+      - name: Check markdown links
+        run: |
+          find . -name "*.md" -type f ! -path "./node_modules/*" | while read file; do
+            echo "Checking links in $file..."
+            markdown-link-check -c .markdown-link-check.json "$file"
+          done
+        continue-on-error: true
+
+      - name: Report results
+        if: failure()
+        run: |
+          echo "⚠️ Some links may be broken. Please check the output above."
+          echo "Note: Some failures may be false positives due to rate limiting or access restrictions."
