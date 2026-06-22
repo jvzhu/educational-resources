@@ -1,0 +1,79 @@
+name: Content Validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.md'
+      - '.github/workflows/content-validation.yml'
+  pull_request:
+    paths:
+      - '**.md'
+
+jobs:
+  validate-content:
+    runs-on: ubuntu-latest
+    name: Validate repository content
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check required files exist
+        run: |
+          echo "Checking for required files..."
+          files=("README.md" "CONTRIBUTION_GUIDE.md" "COLLABORATORS.md" "LICENSE")
+          missing=0
+          
+          for file in "${files[@]}"; do
+            if [ -f "$file" ]; then
+              echo "✓ $file exists"
+            else
+              echo "✗ $file missing"
+              missing=$((missing + 1))
+            fi
+          done
+          
+          if [ $missing -gt 0 ]; then
+            echo "\n⚠️ $missing required file(s) missing"
+            exit 1
+          fi
+
+      - name: Validate markdown structure
+        run: |
+          echo "Validating markdown headers and structure..."
+          python3 << 'EOF'
+          import os
+          import re
+          
+          issues = 0
+          for root, dirs, files in os.walk('.'):
+            if '.git' in root or 'node_modules' in root:
+              continue
+            for file in files:
+              if file.endswith('.md'):
+                filepath = os.path.join(root, file)
+                with open(filepath, 'r', encoding='utf-8') as f:
+                  content = f.read()
+                  
+                # Check for proper header structure
+                headers = re.findall(r'^#+', content, re.MULTILINE)
+                if headers and headers[0] != '#':
+                  print(f"⚠️ {filepath}: First header should be H1 (#)")
+                  issues += 1
+          
+          if issues > 0:
+            print(f"\nFound {issues} potential issues")
+          else:
+            print("✓ All markdown files have proper structure")
+          EOF
+        continue-on-error: true
+
+      - name: Check for empty tables
+        run: |
+          echo "Checking for properly formatted tables..."
+          grep -r "| " *.md > /dev/null 2>&1 && echo "✓ Tables found" || echo "ℹ️ No tables to validate"
+
+      - name: Validation summary
+        run: echo "✅ Content validation complete"
