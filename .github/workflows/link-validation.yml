@@ -9,6 +9,9 @@ on:
       - '**.md'
       - '.github/workflows/link-validation.yml'
 
+permissions:
+  contents: read
+
 jobs:
   validate-links:
     runs-on: ubuntu-latest
